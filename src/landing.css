@@ -30,6 +30,10 @@
   right: -2%;
   bottom: -0.12em;
   height: 0.32em;
+  /* --draw lo anima GSAP de 0% a 100% para "dibujar" el trazo; sin JS queda completo. */
+  clip-path: inset(0 calc(100% - var(--draw, 100%)) 0 0);
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 20' preserveAspectRatio='none'%3E%3Cpath d='M3 13c22-5 46-8 74-8 30 0 52 4 78 3 15 0 29-3 42-6' fill='none' stroke='%233EB489' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center / 100% 100%;
   pointer-events: none;
 }
+
+@property --draw { syntax: '<percentage>'; inherits: true; initial-value: 100%; }

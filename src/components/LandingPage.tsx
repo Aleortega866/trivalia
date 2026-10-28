@@ -1,14 +1,16 @@
 // Generado a partir del diseño de la página de ventas (HTML + Tailwind). Los estilos salen de src/landing.css.
 import { SALES_WHATSAPP } from '../config/site';
 import '../landing.css';
+import { useLandingAnimations } from '../lib/landingAnimations';
 
 function wa(text: string): string {
   return `https://wa.me/52${SALES_WHATSAPP}?text=${encodeURIComponent(text)}`;
 }
 
 export function LandingPage() {
+  const rootRef = useLandingAnimations();
   return (
-    <div className="landing-tw bg-brand-crema text-slate-800 antialiased selection:bg-brand-mint selection:text-white">
+    <div ref={rootRef} className="landing-tw bg-brand-crema text-slate-800 antialiased selection:bg-brand-mint selection:text-white">
 
 {/* BEGIN: MainHeader */}
 <header className="sticky top-0 z-50 bg-[#FAF7F2] border-b border-slate-200">
@@ -40,7 +42,7 @@ export function LandingPage() {
 {/* END: MainHeader */}
 <main>
 {/* BEGIN: HeroSection */}
-<section className="relative pt-12 pb-20 md:pt-20 md:pb-28">
+<section id="hero" className="relative pt-12 pb-20 md:pt-20 md:pb-28">
 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
 {/* Value Proposition & Actions (Left Col) */}
@@ -99,7 +101,7 @@ export function LandingPage() {
 <div className="lg:col-span-5 flex justify-center relative py-6">
   <div className="relative w-[290px] sm:w-[310px]">
     {/* Marco */}
-    <div className="relative rounded-[3rem] bg-slate-900 p-[10px] shadow-[0_30px_60px_-20px_rgba(19,57,46,0.45)] ring-1 ring-slate-700">
+    <div data-anim="phone" className="relative rounded-[3rem] bg-slate-900 p-[10px] shadow-[0_30px_60px_-20px_rgba(19,57,46,0.45)] ring-1 ring-slate-700">
       {/* Botones laterales */}
       <span className="absolute -left-[3px] top-28 h-10 w-[3px] rounded-l bg-slate-700" aria-hidden="true"></span>
       <span className="absolute -left-[3px] top-44 h-16 w-[3px] rounded-l bg-slate-700" aria-hidden="true"></span>
@@ -162,7 +164,7 @@ export function LandingPage() {
     </div>
 
     {/* Tarjeta flotante: el premio */}
-    <div className="absolute hidden sm:block -right-20 -bottom-16 z-20 w-[200px] rounded-2xl bg-white p-3 shadow-xl ring-1 ring-slate-100 text-left">
+    <div data-anim="float" className="absolute hidden sm:block -right-20 -bottom-16 z-20 w-[200px] rounded-2xl bg-white p-3 shadow-xl ring-1 ring-slate-100 text-left">
       <p className="text-[10px] font-bold uppercase tracking-wider text-brand-emerald">¡Ganaste!</p>
       <p className="mt-0.5 text-xs font-extrabold text-slate-900">10% en tu próxima compra</p>
       <div className="mt-2 flex gap-1">
@@ -173,7 +175,7 @@ export function LandingPage() {
     </div>
 
     {/* Tarjeta flotante: contacto nuevo */}
-    <div className="absolute hidden sm:flex -left-24 top-10 z-20 items-center gap-2 rounded-2xl bg-white px-3 py-2 shadow-xl ring-1 ring-slate-100">
+    <div data-anim="float" className="absolute hidden sm:flex -left-24 top-10 z-20 items-center gap-2 rounded-2xl bg-white px-3 py-2 shadow-xl ring-1 ring-slate-100">
       <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EAF7F2] text-[11px] font-black text-brand-emerald">+1</span>
       <div className="text-left leading-tight">
         <p className="text-[11px] font-bold text-slate-900">Nuevo contacto</p>
@@ -182,7 +184,7 @@ export function LandingPage() {
     </div>
 
     {/* Notificaciones flotantes: cupón arriba-centro a la derecha, comensales abajo-centro a la izquierda */}
-    <div className="absolute hidden lg:block -right-20 top-[34%] z-30 w-[220px] text-left rounded-2xl bg-white p-3 shadow-xl ring-1 ring-slate-100">
+    <div data-anim="float" className="absolute hidden lg:block -right-20 top-[34%] z-30 w-[220px] text-left rounded-2xl bg-white p-3 shadow-xl ring-1 ring-slate-100">
       <div className="mb-1 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <img src="/brand/triviala-isotipo.svg" alt="" width="16" height="16" className="h-4 w-4" />
@@ -193,7 +195,7 @@ export function LandingPage() {
       <p className="text-xs font-bold tracking-tight text-slate-900">Cupón de regreso emitido</p>
       <p className="mt-0.5 text-[11px] leading-snug text-slate-500">Premio de 10% activado con código único. Válido por 14 días.</p>
     </div>
-    <div className="absolute hidden lg:block -left-[160px] top-[60%] z-30 w-[220px] text-left rounded-2xl bg-white p-3 shadow-xl ring-1 ring-slate-100">
+    <div data-anim="float" className="absolute hidden lg:block -left-[160px] top-[60%] z-30 w-[220px] text-left rounded-2xl bg-white p-3 shadow-xl ring-1 ring-slate-100">
       <div className="mb-1 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <img src="/brand/triviala-isotipo.svg" alt="" width="16" height="16" className="h-4 w-4" />
@@ -238,7 +240,7 @@ export function LandingPage() {
 <span className="px-2.5 py-1 rounded-full bg-brand-mint text-brand-forest text-[11px] font-black uppercase tracking-wider">Ejemplo · Retención</span>
 <span className="text-xs text-slate-300 font-semibold">Días 1 - 30</span>
 </div>
-<p className="text-5xl sm:text-6xl font-black text-white tracking-tight leading-none">+38%</p>
+<p className="text-5xl sm:text-6xl font-black text-white tracking-tight leading-none" data-count="38" data-prefix="+" data-suffix="%">+38%</p>
 <h3 className="text-lg font-bold text-white mt-3">Visitas recurrentes</h3>
 <p className="text-xs text-slate-200 mt-1 leading-relaxed">Clientes que regresan antes de 30 días activando su cupón en su segunda visita.</p>
 </div>
@@ -259,7 +261,7 @@ export function LandingPage() {
 <div className="flex items-center justify-between mb-4">
 <span className="px-2.5 py-1 rounded-full bg-[#EAF7F2] text-brand-emerald text-[11px] font-extrabold uppercase tracking-wide">Ejemplo · Contactos</span>
 </div>
-<p className="text-5xl sm:text-6xl font-black text-brand-forest tracking-tight leading-none">3.2x</p>
+<p className="text-5xl sm:text-6xl font-black text-brand-forest tracking-tight leading-none" data-count="3.2" data-decimals="1" data-suffix="x">3.2x</p>
 <h3 className="text-lg font-bold text-slate-900 mt-3">Contactos capturados</h3>
 <p className="text-xs text-slate-600 mt-1 leading-relaxed">Una trivia con premio motiva más a dejar sus datos que un formulario normal.</p>
 </div>
