@@ -4,6 +4,7 @@ import { cafeDemo } from '../config/demos/cafe';
 import { countCorrect, formatDuration } from './scoring';
 import { buildCoupon, computeExpiry, createPrizeCode, hasWonPrize } from './prize';
 import { parseRoute } from './route';
+import { couponMessage } from './coupon';
 
 const config = triviaConfigSchema.parse(cafeDemo);
 
@@ -95,5 +96,14 @@ describe('parseRoute', () => {
 
   it('cualquier otra ruta es no encontrada', () => {
     expect(parseRoute('/admin')).toEqual({ view: 'not-found' });
+  });
+});
+
+describe('couponMessage', () => {
+  it('no lleva emojis (wa.me los rompe) y resalta el código', () => {
+    const message = couponMessage(config, { code: 'UV6PJ2', expiresAt: '2026-11-28T05:59:59.000Z' });
+
+    expect(message).toContain('Código: *UV6PJ2*');
+    expect(message).not.toMatch(/\p{Extended_Pictographic}/u);
   });
 });

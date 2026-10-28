@@ -42,12 +42,18 @@ export function loadCouponLocally(slug: string): StoredCoupon | null {
 
 // --- Compartir por WhatsApp -------------------------------------------------
 
+/**
+ * Mensaje para WhatsApp. Sin emojis: el enlace wa.me los rompe en algunas versiones (salen como "�").
+ * Usa el formato de WhatsApp (*negritas*) para resaltar el premio y el código.
+ */
 export function couponMessage(config: TriviaConfig, coupon: Coupon): string {
   return [
-    `🎁 Mi cupón de ${config.brand.name}`,
-    `${config.prize.description}`,
-    `Código: ${coupon.code}`,
+    `Mi cupón de ${config.brand.name}`,
+    `*${config.prize.description}*`,
+    '',
+    `Código: *${coupon.code}*`,
     `Válido hasta el ${formatExpiry(coupon.expiresAt)}`,
+    '',
     config.prize.redeemInstructions,
   ].join('\n');
 }
