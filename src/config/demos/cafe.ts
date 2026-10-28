@@ -1,13 +1,13 @@
 import type { z } from 'zod';
-import type { triviaConfigSchema } from '../schema';
+import type { triviaConfigSchema } from '../schema.js';
 
 export const cafeDemo = {
   slug: 'demo-cafe',
   brand: {
     name: 'Café La Esquina',
     tagline: 'Café de especialidad desde 2019',
-    colorPrimary: '#3b2418',
-    colorAccent: '#e8a33d',
+    color: '#1f4f4a',
+    accent: '#d9826b',
     emoji: '☕',
   },
   title: '¿Cuánto sabes de café?',
@@ -52,7 +52,8 @@ export const cafeDemo = {
   prize: {
     minCorrect: 4,
     description: 'Un café americano gratis',
-    redeemInstructions: 'Muestra esta pantalla en caja. Válido 30 días, uno por persona.',
+    validDays: 30,
+    redeemInstructions: 'Muestra este cupón en caja en tu próxima compra. Uno por persona.',
   },
-  privacyNoticeUrl: '#aviso-privacidad',
+  privacyNoticeUrl: '',
 } satisfies z.input<typeof triviaConfigSchema>;

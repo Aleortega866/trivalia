@@ -1,5 +1,7 @@
 import { Redis } from '@upstash/redis';
-import { participantSchema } from '../src/config/schema.js';
+import { couponSchema, participantSchema } from '../src/config/schema.js';
+import { getTrivia } from '../src/config/trivias.js';
+import { buildCoupon } from '../src/lib/prize.js';
 
 const RATE_LIMIT_MAX = 10;
 const RATE_LIMIT_WINDOW_S = 60;
@@ -38,13 +40,29 @@ export async function POST(request: Request): Promise<Response> {
   const parsed = participantSchema.safeParse(body);
   if (!parsed.success) return json({ error: 'Datos inválidos', issues: parsed.error.issues }, 400);
 
-  const { triviaSlug, whatsapp, ...rest } = parsed.data;
+  const { triviaSlug, whatsapp, correctCount, ...rest } = parsed.data;
+  const trivia = getTrivia(triviaSlug);
+  if (!trivia) return json({ error: 'Trivia no encontrada' }, 404);
+  if (correctCount > trivia.questions.length) return json({ error: 'Puntaje inválido' }, 400);
+
+  const coupon = buildCoupon(trivia, correctCount);
   const participantKey = `trivia:${triviaSlug}:participant:${whatsapp}`;
+  const record = { whatsapp, correctCount, ...rest, coupon, createdAt: new Date().toISOString() };
 
   // NX: solo guarda si este WhatsApp no ha participado en esta trivia.
-  const created = await redis.set(participantKey, { whatsapp, ...rest, createdAt: new Date().toISOString() }, { nx: true });
-  if (created === null) return json({ error: 'Ya participó' }, 409);
+  const created = await redis.set(participantKey, record, { nx: true });
+  if (created === null) {
+    // Ya jugó con este WhatsApp: le regresamos su cupón (si ganó) para que no lo pierda.
+    const existing = await redis.get<{ coupon?: unknown }>(participantKey);
+    const previous = couponSchema.safeParse(existing?.coupon);
+    return json({ error: 'Ya participó', coupon: previous.success ? previous.data : null }, 409);
+  }
 
   await redis.sadd(`trivia:${triviaSlug}:participants`, whatsapp);
-  return json({ ok: true }, 201);
+  if (coupon) {
+    // El negocio valida el cupón por su código (pantalla de canje, siguiente paso).
+    await redis.set(`coupon:${coupon.code}`, { ...coupon, triviaSlug, whatsapp, redeemedAt: null });
+  }
+
+  return json({ ok: true, coupon }, 201);
 }

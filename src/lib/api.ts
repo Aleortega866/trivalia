@@ -1,11 +1,17 @@
 import type { z } from 'zod';
-import type { participantSchema } from '../config/schema';
+import { alreadyPlayedResponseSchema, participantResponseSchema } from '../config/schema';
+import type { Coupon, participantSchema } from '../config/schema';
 
 const REQUEST_TIMEOUT_MS = 8000;
+const HTTP_CONFLICT = 409;
+const HTTP_TOO_MANY_REQUESTS = 429;
 
 export type ParticipantInput = z.input<typeof participantSchema>;
 
-export type SubmitResult = { ok: true } | { ok: false; message: string };
+export type SubmitResult =
+  | { status: 'saved'; coupon: Coupon | null }
+  | { status: 'already-played'; coupon: Coupon | null }
+  | { status: 'error'; message: string };
 
 export async function submitParticipant(input: ParticipantInput): Promise<SubmitResult> {
   try {
@@ -15,12 +21,26 @@ export async function submitParticipant(input: ParticipantInput): Promise<Submit
       body: JSON.stringify(input),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
-    if (res.ok) return { ok: true };
-    if (res.status === 429) return { ok: false, message: 'Demasiados intentos. Espera un minuto.' };
-    if (res.status === 409) return { ok: false, message: 'Este WhatsApp ya participó en esta trivia.' };
-    return { ok: false, message: 'No pudimos guardar tus datos. Intenta de nuevo.' };
+
+    if (res.status === HTTP_CONFLICT) {
+      const parsed = alreadyPlayedResponseSchema.safeParse(await res.json().catch(() => ({})));
+      return { status: 'already-played', coupon: parsed.success ? parsed.data.coupon : null };
+    }
+    if (res.status === HTTP_TOO_MANY_REQUESTS) {
+      return { status: 'error', message: 'Demasiados intentos. Espera un minuto.' };
+    }
+    if (!res.ok) {
+      return { status: 'error', message: 'No pudimos guardar tus datos. Intenta de nuevo.' };
+    }
+
+    const parsed = participantResponseSchema.safeParse(await res.json());
+    if (!parsed.success) {
+      console.error(new Error('Respuesta inesperada del servidor', { cause: parsed.error }));
+      return { status: 'error', message: 'Algo salió mal de nuestro lado. Intenta de nuevo en un momento.' };
+    }
+    return { status: 'saved', coupon: parsed.data.coupon };
   } catch (error) {
     console.error(new Error('Fallo al enviar participante', { cause: error }));
-    return { ok: false, message: 'Sin conexión. Revisa tu internet e intenta de nuevo.' };
+    return { status: 'error', message: 'Sin conexión. Revisa tu internet e intenta de nuevo.' };
   }
 }

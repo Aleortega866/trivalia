@@ -1,23 +1,33 @@
-import { useEffect, useEffectEvent, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Question } from '../config/schema';
 
 const TICK_MS = 1000;
-const FEEDBACK_MS = 1600;
+const LETTERS = ['A', 'B', 'C', 'D'] as const;
+
+type OptionState = 'idle' | 'correct' | 'wrong';
 
 type Props = {
   question: Question;
   number: number;
   total: number;
   secondsPerQuestion: number;
-  onAnswer: (selectedIndex: number | null) => void;
+  brandName: string;
+  onAnswer: (selectedIndex: number | null, secondsUsed: number) => void;
 };
 
-export function QuestionCard({ question, number, total, secondsPerQuestion, onAnswer }: Props) {
+function formatClock(seconds: number): string {
+  const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
+  const ss = String(seconds % 60).padStart(2, '0');
+  return `${mm}:${ss}`;
+}
+
+export function QuestionCard({ question, number, total, secondsPerQuestion, brandName, onAnswer }: Props) {
   const [secondsLeft, setSecondsLeft] = useState(secondsPerQuestion);
   const [selected, setSelected] = useState<number | null | undefined>(undefined);
   const hasAnswered = selected !== undefined;
-
-  const finish = useEffectEvent((choice: number | null) => onAnswer(choice));
+  const isRight = selected === question.correctIndex;
+  const isLast = number === total;
+  const remaining = total - number;
 
   useEffect(() => {
     if (hasAnswered) return;
@@ -29,58 +39,105 @@ export function QuestionCard({ question, number, total, secondsPerQuestion, onAn
     if (secondsLeft === 0 && !hasAnswered) setSelected(null);
   }, [secondsLeft, hasAnswered]);
 
-  useEffect(() => {
-    if (!hasAnswered) return;
-    const id = setTimeout(() => finish(selected), FEEDBACK_MS);
-    return () => clearTimeout(id);
-  }, [hasAnswered, selected]);
-
-  function optionState(index: number): 'idle' | 'correct' | 'wrong' {
+  function optionState(index: number): OptionState {
     if (!hasAnswered) return 'idle';
     if (index === question.correctIndex) return 'correct';
     return index === selected ? 'wrong' : 'idle';
   }
 
-  const progress = secondsLeft / secondsPerQuestion;
+  function feedbackTitle(): string {
+    if (isRight) return '¡Correcto!';
+    return selected === null ? 'Se acabó el tiempo' : 'Casi';
+  }
+
+  function handleNext() {
+    if (selected === undefined) return;
+    onAnswer(selected, secondsPerQuestion - secondsLeft);
+  }
 
   return (
-    <section className="card" aria-labelledby={`q-${question.id}`}>
-      <div className="question-meta">
-        <span>
-          Pregunta {number} de {total}
-        </span>
-        <span aria-live="polite" className="timer">
-          {hasAnswered ? '' : `${secondsLeft}s`}
-        </span>
+    <section className="quiz" aria-labelledby={`q-${question.id}`}>
+      <div className="quiz__top">
+        <p className="quiz__bar">{brandName}</p>
+
+        <div className="quiz__meta">
+          <p className="quiz__count">Pregunta {String(number).padStart(2, '0')}</p>
+          <p className="timer-pill" data-urgent={secondsLeft <= 5 && !hasAnswered}>
+            <span className="visually-hidden">Tiempo restante </span>
+            <span className="timer-pill__time">{formatClock(secondsLeft)}</span>
+            <span aria-hidden="true">⏳</span>
+          </p>
+        </div>
+
+        <h2 id={`q-${question.id}`} className="quiz__question">
+          {question.text}
+        </h2>
       </div>
-      <div className="timer-bar" aria-hidden="true">
-        <div className="timer-bar__fill" style={{ transform: `scaleX(${progress})` }} />
+
+      <div className="quiz__sheet">
+        <ul className="answers">
+          {question.options.map((option, index) => {
+            const state = optionState(index);
+            return (
+              <li key={option}>
+                <button
+                  type="button"
+                  className="answer"
+                  data-state={state}
+                  disabled={hasAnswered}
+                  onClick={() => setSelected(index)}
+                >
+                  <span className="answer__letter">{LETTERS[index]}.</span>
+                  <span className="answer__text">{option}</span>
+                  {state === 'correct' && (
+                    <span className="answer__mark" aria-label="respuesta correcta">
+                      ✓
+                    </span>
+                  )}
+                  {state === 'wrong' && (
+                    <span className="answer__mark answer__mark--wrong" aria-label="tu respuesta, incorrecta">
+                      ✕
+                    </span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="segments-block">
+          <p className="segments-label">
+            <strong>{number}</strong> de {total}
+          </p>
+          <div
+            className="segments"
+            role="progressbar"
+            aria-label="Avance de la trivia"
+            aria-valuemin={0}
+            aria-valuemax={total}
+            aria-valuenow={number}
+          >
+            {Array.from({ length: total }, (_, i) => (
+              <span key={i} className="segments__item" data-done={i < number} />
+            ))}
+          </div>
+          <p className="segments-hint">
+            {remaining === 0 ? 'Última pregunta' : `${remaining} ${remaining === 1 ? 'pregunta restante' : 'preguntas restantes'}`}
+          </p>
+        </div>
+
+        <div className="feedback-slot" aria-live="polite">
+          {hasAnswered && (
+            <p className="feedback" data-tone={isRight ? 'right' : 'wrong'}>
+              <strong>{feedbackTitle()}</strong> {question.funFact}
+            </p>
+          )}
+        </div>
+
+        <button type="button" className="cta" disabled={!hasAnswered} onClick={handleNext}>
+          {isLast ? 'Terminar' : 'Siguiente pregunta'}
+        </button>
       </div>
-
-      <h2 id={`q-${question.id}`} className="question-text">
-        {question.text}
-      </h2>
-
-      <ul className="options">
-        {question.options.map((option, index) => (
-          <li key={option}>
-            <button
-              type="button"
-              className="option"
-              data-state={optionState(index)}
-              disabled={hasAnswered}
-              onClick={() => setSelected(index)}
-            >
-              {option}
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      <p className="feedback" aria-live="polite">
-        {hasAnswered && (selected === question.correctIndex ? '¡Correcto! ' : selected === null ? 'Se acabó el tiempo. ' : 'Casi. ')}
-        {hasAnswered && question.funFact}
-      </p>
     </section>
   );
 }

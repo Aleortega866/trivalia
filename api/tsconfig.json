@@ -1,14 +1,26 @@
 {
   "compilerOptions": {
     "target": "es2023",
-    "lib": ["ES2023", "DOM"],
+    "lib": [
+      "ES2023",
+      "DOM"
+    ],
     "module": "nodenext",
     "moduleResolution": "nodenext",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": [".", "../src/config/schema.ts"]
+  "include": [
+    ".",
+    "../src/config/schema.ts",
+    "../src/config/trivias.ts",
+    "../src/config/demos",
+    "../src/lib/prize.ts",
+    "../server"
+  ]
 }
