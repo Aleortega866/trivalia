@@ -5,6 +5,8 @@ import { countCorrect, formatDuration } from './scoring';
 import { buildCoupon, computeExpiry, createPrizeCode, hasWonPrize } from './prize';
 import { parseRoute } from './route';
 import { couponMessage } from './coupon';
+import { prospectDemos } from '../config/demos/prospects';
+import { getTrivia } from '../config/trivias';
 
 const config = triviaConfigSchema.parse(cafeDemo);
 
@@ -105,5 +107,14 @@ describe('couponMessage', () => {
 
     expect(message).toContain('Código: *UV6PJ2*');
     expect(message).not.toMatch(/\p{Extended_Pictographic}/u);
+  });
+});
+
+describe('demos de prospectos', () => {
+  it('todas las trivias registradas son válidas y tienen slug único', () => {
+    const slugs = [...prospectDemos, cafeDemo].map((d) => triviaConfigSchema.parse(d).slug);
+
+    expect(new Set(slugs).size).toBe(slugs.length);
+    for (const slug of slugs) expect(getTrivia(slug)?.slug).toBe(slug);
   });
 });
