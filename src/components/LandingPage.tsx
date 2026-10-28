@@ -768,6 +768,7 @@ En menos de 48 horas hábiles configuramos las preguntas, adaptamos tu paleta de
 <a className="hover:text-brand-forest" href="/privacidad">Aviso de privacidad</a>
 <a className="hover:text-brand-forest" href="/terminos">Términos</a>
 <a className="hover:text-brand-forest" href={wa("Hola Triviala")} target="_blank" rel="noreferrer">Contacto</a>
+<a className="hover:text-brand-forest" href="mailto:trivialamexico@gmail.com">trivialamexico@gmail.com</a>
 </div>
 </div>
 </footer>

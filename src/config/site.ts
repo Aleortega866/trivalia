@@ -10,7 +10,7 @@ export const salesWhatsappUrl = `https://wa.me/52${SALES_WHATSAPP}?text=${encode
 export const LEGAL = {
   owner: 'PENDIENTE: nombre completo o razón social',
   address: 'PENDIENTE: domicilio para oír y recibir notificaciones',
-  email: 'PENDIENTE: correo para privacidad',
+  email: 'trivialamexico@gmail.com',
   city: 'Atizapán de Zaragoza, Estado de México',
   updated: '28 de octubre de 2026',
 } as const;
