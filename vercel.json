@@ -7,6 +7,7 @@
     { "source": "/privacidad", "destination": "/index.html" },
     { "source": "/privacidad/:slug", "destination": "/index.html" },
     { "source": "/terminos", "destination": "/index.html" },
+    { "source": "/cartel/:slug", "destination": "/index.html" },
     { "source": "/bases/:slug", "destination": "/index.html" }
   ]
 }

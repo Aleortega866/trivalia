@@ -5,6 +5,7 @@ import { TriviaApp } from './TriviaApp';
 import { RedeemPage } from './components/RedeemPage';
 import { StatsPage } from './components/StatsPage';
 import { LandingPage } from './components/LandingPage';
+import { PosterPage } from './components/PosterPage';
 import { PlayerPrivacy, PromoRules, TrivialaPrivacy, TrivialaTerms } from './components/LegalPage';
 
 // La ruta se lee una vez: cambiar de trivia es navegar a otra URL (recarga completa).
@@ -19,6 +20,7 @@ export function App() {
   // key: si en el futuro se navega sin recargar, el estado de una trivia no se mezcla con otra.
   if (route.view === 'redeem') return <RedeemPage key={config.slug} config={config} />;
   if (route.view === 'panel') return <StatsPage key={config.slug} config={config} />;
+  if (route.view === 'poster') return <PosterPage key={config.slug} config={config} />;
   if (route.view === 'legal-trivia') return route.doc === 'privacidad' ? <PlayerPrivacy config={config} /> : <PromoRules config={config} />;
   return <TriviaApp key={config.slug} config={config} />;
 }

@@ -96,6 +96,7 @@ describe('parseRoute', () => {
     expect(parseRoute('/canje/demo-cafe/')).toEqual({ view: 'redeem', slug: 'demo-cafe' });
     expect(parseRoute('/panel/kanu-cafe')).toEqual({ view: 'panel', slug: 'kanu-cafe' });
     expect(parseRoute('/privacidad')).toEqual({ view: 'legal', doc: 'privacidad' });
+    expect(parseRoute('/cartel/demo-cafe')).toEqual({ view: 'poster', slug: 'demo-cafe' });
     expect(parseRoute('/terminos/')).toEqual({ view: 'legal', doc: 'terminos' });
     expect(parseRoute('/privacidad/demo-cafe')).toEqual({ view: 'legal-trivia', doc: 'privacidad', slug: 'demo-cafe' });
     expect(parseRoute('/bases/demo-cafe')).toEqual({ view: 'legal-trivia', doc: 'bases', slug: 'demo-cafe' });

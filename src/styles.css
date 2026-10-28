@@ -848,3 +848,36 @@
 .legal a { color: #1f5e4b; font-weight: 600; text-underline-offset: 3px; }
 .legal__links { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; }
 .legal__footer { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; padding-block: 1.5rem 2.5rem; border-top: 1px solid #e2e8f0; font-size: 0.85rem; color: #475569; }
+
+/* Cartel QR para imprimir: 10 × 15 cm, colores del negocio */
+.poster-page { min-height: 100dvh; background: #e9e6e0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; padding: 24px max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.poster-toolbar { width: min(100%, 10cm); display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+.poster-toolbar__title { margin: 0; font-weight: 800; color: #13392e; }
+.poster-toolbar__hint { margin: 2px 0 0; font-size: 12px; color: #475569; }
+.poster-toolbar__btn { inline-size: auto; padding-inline: 20px; flex-shrink: 0; }
+.poster { width: 10cm; height: 15cm; max-width: 100%; background: var(--brand); color: #fff; border-radius: 6mm; padding: 7mm 7mm 5mm; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 20px 40px -18px rgba(0,0,0,.35); overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.poster__brand { display: flex; align-items: center; gap: 2.5mm; }
+.poster__emoji { width: 10mm; height: 10mm; border-radius: 50%; background: #fff; display: grid; place-items: center; font-size: 5.5mm; }
+.poster__name { font-weight: 800; font-size: 4.2mm; letter-spacing: .12em; text-transform: uppercase; }
+.poster__hero { margin-top: 6mm; }
+.poster__kicker { margin: 0; font-size: 4.2mm; font-weight: 600; opacity: .85; }
+.poster__prize { margin: 1.5mm 0 0; font-size: 8.4mm; line-height: 1.08; font-weight: 800; letter-spacing: -.02em; text-wrap: balance; }
+.poster__qr-wrap { margin-top: 6mm; background: #fff; border-radius: 4mm; padding: 4mm; box-shadow: 0 0 0 1.2mm color-mix(in srgb, var(--accent) 85%, white); }
+.poster__qr { width: 46mm; height: 46mm; }
+.poster__qr svg { display: block; width: 100%; height: 100%; }
+.poster__qr--loading { background: #f1f5f4; border-radius: 2mm; }
+.poster__steps { list-style: none; margin: 6mm 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2mm; width: 100%; font-size: 3mm; font-weight: 600; line-height: 1.25; }
+.poster__steps li { display: flex; flex-direction: column; align-items: center; gap: 1.2mm; }
+.poster__steps b { width: 6mm; height: 6mm; border-radius: 50%; background: #fff; color: var(--brand); display: grid; place-items: center; font-size: 3.2mm; font-weight: 800; }
+.poster__footer { margin-top: auto; width: 100%; display: flex; justify-content: space-between; align-items: center; font-size: 2.4mm; opacity: .8; border-top: .3mm solid rgba(255,255,255,.25); padding-top: 2.5mm; }
+.poster__made { display: inline-flex; align-items: center; gap: 1.2mm; font-weight: 700; }
+.poster__made img { width: 3mm; height: 3mm; border-radius: .8mm; }
+.poster-url { font-size: 12px; color: #475569; margin: 0; text-align: center; word-break: break-all; }
+
+@media print {
+  @page { size: 10cm 15cm; margin: 0; }
+  html, body { background: #fff; }
+  .poster-page { padding: 0; background: none; min-height: 0; display: block; }
+  .poster-toolbar, .poster-url { display: none; }
+  .poster { border-radius: 0; box-shadow: none; max-width: none; }
+}
