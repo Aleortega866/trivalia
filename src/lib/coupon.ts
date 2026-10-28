@@ -53,6 +53,7 @@ export function couponMessage(config: TriviaConfig, coupon: Coupon): string {
     '',
     `Código: *${coupon.code}*`,
     `Válido hasta el ${formatExpiry(coupon.expiresAt)}`,
+    ...(config.prize.conditions.length > 0 ? ['', `Condiciones: ${config.prize.conditions.join(', ')}`] : []),
     '',
     config.prize.redeemInstructions,
   ].join('\n');
@@ -167,7 +168,17 @@ export async function renderCouponImage(config: TriviaConfig, coupon: Coupon, th
   ctx.fillText(`Válido hasta el ${formatExpiry(coupon.expiresAt)}`, cx, boxY + TILE_H + 100);
   ctx.fillStyle = '#66706e';
   ctx.font = `400 34px ${sans}`;
-  wrapLines(ctx, config.prize.redeemInstructions, cardW - 140).forEach((line, i) => ctx.fillText(line, cx, boxY + TILE_H + 170 + i * 44));
+  const instructionLines = wrapLines(ctx, config.prize.redeemInstructions, cardW - 140);
+  instructionLines.forEach((line, i) => ctx.fillText(line, cx, boxY + TILE_H + 170 + i * 44));
+
+  // Condiciones debajo de la tarjeta, en blanco sobre el color de marca: el cajero las ve sin abrir nada más.
+  if (config.prize.conditions.length > 0) {
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `500 32px ${sans}`;
+    wrapLines(ctx, `Condiciones: ${config.prize.conditions.join(' · ')}`, IMAGE_WIDTH - 160)
+      .slice(0, 3)
+      .forEach((line, i) => ctx.fillText(line, cx, cardY + cardH + 80 + i * 44));
+  }
 
   ctx.fillStyle = '#ffffff';
   ctx.globalAlpha = 0.7;

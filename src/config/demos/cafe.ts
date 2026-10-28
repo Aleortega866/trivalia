@@ -54,6 +54,8 @@ export const cafeDemo = {
     description: 'Un café americano gratis',
     validDays: 30,
     redeemInstructions: 'Muestra este cupón en caja en tu próxima compra. Uno por persona.',
+    conditions: ['En compras de $120 o más', 'Lunes a jueves', 'No acumulable con otras promociones'],
+    maxCoupons: 50,
   },
   privacyNoticeUrl: '',
 } satisfies z.input<typeof triviaConfigSchema>;

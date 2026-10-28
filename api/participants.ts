@@ -59,10 +59,21 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   await redis.sadd(`trivia:${triviaSlug}:participants`, whatsapp);
+
+  // Tope de cupones: el contador solo sube cuando alguien gana (y después del NX, así repetir no gasta cupos).
+  const { maxCoupons } = trivia.prize;
+  if (coupon && maxCoupons !== undefined) {
+    const issued = await redis.incr(`trivia:${triviaSlug}:coupons-issued`);
+    if (issued > maxCoupons) {
+      await redis.set(participantKey, { ...record, coupon: null });
+      return json({ ok: true, coupon: null, soldOut: true }, 201);
+    }
+  }
+
   if (coupon) {
     // El negocio valida el cupón por su código (pantalla de canje, siguiente paso).
     await redis.set(`coupon:${coupon.code}`, { ...coupon, triviaSlug, whatsapp, redeemedAt: null });
   }
 
-  return json({ ok: true, coupon }, 201);
+  return json({ ok: true, coupon, soldOut: false }, 201);
 }

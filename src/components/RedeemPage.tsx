@@ -188,6 +188,16 @@ function RedeemResultCard({ code, result, onRedeem, onNext }: ResultProps) {
               <dd>{result.whatsappHint}</dd>
             </div>
           </dl>
+          {result.conditions.length > 0 && (
+            <div className="redeem__check">
+              <p className="redeem__check-title">Antes de canjear, verifica:</p>
+              <ul>
+                {result.conditions.map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           <button type="button" className="cta" onClick={onRedeem}>
             Canjear ahora
           </button>

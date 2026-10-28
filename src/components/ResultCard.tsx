@@ -10,10 +10,11 @@ type Props = {
   correctCount: number;
   secondsUsed: number;
   coupon: Coupon | null;
+  soldOut: boolean;
   onRestart: () => void;
 };
 
-export function ResultCard({ config, correctCount, secondsUsed, coupon, onRestart }: Props) {
+export function ResultCard({ config, correctCount, secondsUsed, coupon, soldOut, onRestart }: Props) {
   const total = config.questions.length;
   const ratio = correctCount / total;
   const missing = Math.max(config.prize.minCorrect - correctCount, 0);
@@ -36,7 +37,7 @@ export function ResultCard({ config, correctCount, secondsUsed, coupon, onRestar
   return (
     <section className="result">
       <div className="result__top">
-        <h2 className="result__title">{coupon ? '¡Ganaste!' : '¡Buen intento!'}</h2>
+        <h2 className="result__title">{coupon ? '¡Ganaste!' : soldOut ? '¡Muy bien!' : '¡Buen intento!'}</h2>
 
         <div className="ring" role="img" aria-label={`${correctCount} de ${total} correctas`}>
           <svg viewBox="0 0 120 120" aria-hidden="true">
@@ -63,6 +64,11 @@ export function ResultCard({ config, correctCount, secondsUsed, coupon, onRestar
       <div className="result__sheet">
         {coupon ? (
           <CouponCard config={config} coupon={coupon} />
+        ) : soldOut ? (
+          <div className="prize prize--miss">
+            <p className="prize__label">Se acabaron los premios</p>
+            <p className="hint">Llegaste a la meta, pero ya se entregaron todos los premios de esta promoción. ¡Gracias por jugar!</p>
+          </div>
         ) : (
           <div className="prize prize--miss">
             <p className="prize__label">

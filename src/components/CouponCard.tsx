@@ -43,6 +43,7 @@ export function CouponCard({ config, coupon }: Props) {
         ))}
       </p>
       <p className="coupon__expiry">Válido hasta el {expiry}</p>
+      {config.prize.conditions.length > 0 && <p className="conditions">{config.prize.conditions.join(' · ')}</p>}
 
       <div className="coupon__actions">
         <button type="button" className="cta" onClick={handleSaveImage} disabled={status.kind === 'saving'}>

@@ -71,7 +71,7 @@ export async function processRedeem(
 
   const prize = trivia.prize.description;
   if (action === 'check') {
-    return { status: 'valid', prize, expiresAt: coupon.expiresAt, whatsappHint: maskWhatsapp(coupon.whatsapp) };
+    return { status: 'valid', prize, conditions: trivia.prize.conditions, expiresAt: coupon.expiresAt, whatsappHint: maskWhatsapp(coupon.whatsapp) };
   }
 
   const at = now.toISOString();

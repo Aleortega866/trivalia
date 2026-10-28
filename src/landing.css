@@ -1,0 +1,35 @@
+/* Reset de Tailwind (preflight) limitado a la página de ventas. */
+.landing-tw { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; min-height: 100dvh; line-height: 1.5; }
+.landing-tw *, .landing-tw ::before, .landing-tw ::after { box-sizing: border-box; border: 0 solid #e5e7eb; margin: 0; padding: 0; }
+.landing-tw h1, .landing-tw h2, .landing-tw h3, .landing-tw h4, .landing-tw p { font-size: inherit; font-weight: inherit; font-family: inherit; }
+.landing-tw a { color: inherit; text-decoration: inherit; }
+.landing-tw ul, .landing-tw ol { list-style: none; }
+.landing-tw svg { display: block; vertical-align: middle; }
+.landing-tw button { background: transparent; font: inherit; color: inherit; cursor: pointer; }
+.landing-tw details summary::-webkit-details-marker { display: none; }
+.landing-tw details summary { list-style: none; }
+
+@tailwind utilities;
+
+/* Palabra destacada de cada título: serif en cursiva + un solo trazo hecho a mano (como marcador). */
+.landing-tw .highlight-word {
+  position: relative;
+  display: inline-block;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.12em;
+  letter-spacing: 0;
+  padding-inline: 0.04em 0.08em;
+  white-space: nowrap;
+}
+.landing-tw .highlight-word::after {
+  content: '';
+  position: absolute;
+  left: -2%;
+  right: -2%;
+  bottom: -0.12em;
+  height: 0.32em;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 20' preserveAspectRatio='none'%3E%3Cpath d='M3 13c22-5 46-8 74-8 30 0 52 4 78 3 15 0 29-3 42-6' fill='none' stroke='%233EB489' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center / 100% 100%;
+  pointer-events: none;
+}

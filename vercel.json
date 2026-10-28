@@ -2,6 +2,11 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     { "source": "/t/:slug", "destination": "/index.html" },
-    { "source": "/canje/:slug", "destination": "/index.html" }
+    { "source": "/canje/:slug", "destination": "/index.html" },
+    { "source": "/panel/:slug", "destination": "/index.html" },
+    { "source": "/privacidad", "destination": "/index.html" },
+    { "source": "/privacidad/:slug", "destination": "/index.html" },
+    { "source": "/terminos", "destination": "/index.html" },
+    { "source": "/bases/:slug", "destination": "/index.html" }
   ]
 }

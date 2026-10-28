@@ -38,6 +38,7 @@ describe('processRedeem', () => {
     expect(first).toEqual({
       status: 'valid',
       prize: 'Un café americano gratis',
+      conditions: ['En compras de $120 o más', 'Lunes a jueves', 'No acumulable con otras promociones'],
       expiresAt: validCoupon.expiresAt,
       whatsappHint: '55 •••• 5678',
     });

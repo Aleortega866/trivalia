@@ -88,12 +88,17 @@ describe('buildCoupon', () => {
 
 describe('parseRoute', () => {
   it('la raíz abre la demo por defecto', () => {
-    expect(parseRoute('/')).toEqual({ view: 'trivia', slug: 'demo-cafe' });
+    expect(parseRoute('/')).toEqual({ view: 'landing' });
   });
 
   it('reconoce trivia y canje por slug', () => {
     expect(parseRoute('/t/demo-gym')).toEqual({ view: 'trivia', slug: 'demo-gym' });
     expect(parseRoute('/canje/demo-cafe/')).toEqual({ view: 'redeem', slug: 'demo-cafe' });
+    expect(parseRoute('/panel/kanu-cafe')).toEqual({ view: 'panel', slug: 'kanu-cafe' });
+    expect(parseRoute('/privacidad')).toEqual({ view: 'legal', doc: 'privacidad' });
+    expect(parseRoute('/terminos/')).toEqual({ view: 'legal', doc: 'terminos' });
+    expect(parseRoute('/privacidad/demo-cafe')).toEqual({ view: 'legal-trivia', doc: 'privacidad', slug: 'demo-cafe' });
+    expect(parseRoute('/bases/demo-cafe')).toEqual({ view: 'legal-trivia', doc: 'bases', slug: 'demo-cafe' });
   });
 
   it('cualquier otra ruta es no encontrada', () => {
@@ -116,5 +121,37 @@ describe('demos de prospectos', () => {
 
     expect(new Set(slugs).size).toBe(slugs.length);
     for (const slug of slugs) expect(getTrivia(slug)?.slug).toBe(slug);
+  });
+});
+
+
+describe('participantSchema (seguridad del formulario)', () => {
+  const base = { triviaSlug: 'demo-cafe', consent: true as const, correctCount: 3, totalQuestions: 5 };
+
+  it('acepta nombres con acentos y limpia espacios', () => {
+    const r = participantSchema.parse({ ...base, name: '  María   José  ', whatsapp: '55 1234 5678' });
+    expect(r.name).toBe('María José');
+    expect(r.whatsapp).toBe('5512345678');
+  });
+
+  it('rechaza scripts, símbolos y números en el nombre', () => {
+    for (const name of ['<script>alert(1)</script>', '=HYPERLINK("x")', 'Ana123', '😀😀']) {
+      expect(participantSchema.safeParse({ ...base, name, whatsapp: '5512345678' }).success).toBe(false);
+    }
+  });
+
+  it('rechaza nombres vacíos o demasiado largos', () => {
+    expect(participantSchema.safeParse({ ...base, name: ' ', whatsapp: '5512345678' }).success).toBe(false);
+    expect(participantSchema.safeParse({ ...base, name: 'a'.repeat(41), whatsapp: '5512345678' }).success).toBe(false);
+  });
+
+  it('rechaza WhatsApp incompleto o que empieza con 0/1', () => {
+    for (const whatsapp of ['', '551234567', '0512345678', '1512345678', '55123456789']) {
+      expect(participantSchema.safeParse({ ...base, name: 'Ana', whatsapp }).success).toBe(false);
+    }
+  });
+
+  it('rechaza campos extra', () => {
+    expect(participantSchema.safeParse({ ...base, name: 'Ana', whatsapp: '5512345678', isAdmin: true }).success).toBe(false);
   });
 });

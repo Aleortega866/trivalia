@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { Coupon, TriviaConfig } from './config/schema';
 import { countCorrect, totalSeconds } from './lib/scoring';
@@ -14,11 +14,12 @@ type Stage =
   | { name: 'intro' }
   | { name: 'question'; index: number }
   | { name: 'lead' }
-  | { name: 'result'; coupon: Coupon | null }
+  | { name: 'result'; coupon: Coupon | null; soldOut: boolean }
   | { name: 'saved-coupon'; coupon: StoredCoupon; notice?: string };
 
 /** El juego completo para una trivia: intro → preguntas → datos → resultado. */
 export function TriviaApp({ config }: { config: TriviaConfig }) {
+  const conditionsDialogRef = useRef<HTMLDialogElement>(null);
   const [stage, setStage] = useState<Stage>({ name: 'intro' });
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [savedCoupon, setSavedCoupon] = useState(() => loadCouponLocally(config.slug));
@@ -33,12 +34,12 @@ export function TriviaApp({ config }: { config: TriviaConfig }) {
     setStage(isLast ? { name: 'lead' } : { name: 'question', index: index + 1 });
   }
 
-  function handleSubmitted(coupon: Coupon | null) {
+  function handleSubmitted(coupon: Coupon | null, soldOut: boolean) {
     if (coupon) {
       saveCouponLocally(config.slug, coupon, config.prize.description);
       setSavedCoupon({ ...coupon, prize: config.prize.description });
     }
-    setStage({ name: 'result', coupon });
+    setStage({ name: 'result', coupon, soldOut });
   }
 
   function handleAlreadyWon(coupon: Coupon) {
@@ -77,10 +78,30 @@ export function TriviaApp({ config }: { config: TriviaConfig }) {
             <p className="hint">
               {total} preguntas · {config.secondsPerQuestion} segundos cada una
             </p>
+            {config.prize.conditions.length > 0 && (
+              <button type="button" className="conditions-link" onClick={() => conditionsDialogRef.current?.showModal()}>
+                Aplican condiciones
+              </button>
+            )}
             <button type="button" className="cta" onClick={() => setStage({ name: 'question', index: 0 })}>
               Empezar <span className="cta__arrow" aria-hidden="true">→</span>
             </button>
           </section>
+        )}
+        {stage.name === 'intro' && config.prize.conditions.length > 0 && (
+          <dialog ref={conditionsDialogRef} className="privacy-dialog" aria-labelledby="conditions-title">
+            <h2 id="conditions-title">Condiciones del premio</h2>
+            <ul className="conditions-list">
+              {config.prize.conditions.map((c) => (
+                <li key={c}>{c}</li>
+              ))}
+            </ul>
+            <form method="dialog">
+              <button type="submit" className="cta">
+                Entendido
+              </button>
+            </form>
+          </dialog>
         )}
         {stage.name === 'intro' && savedCoupon && (
           <button type="button" className="saved-banner saved-banner--below" onClick={() => setStage({ name: 'saved-coupon', coupon: savedCoupon })}>
@@ -123,6 +144,7 @@ export function TriviaApp({ config }: { config: TriviaConfig }) {
             correctCount={correctCount}
             secondsUsed={totalSeconds(answers)}
             coupon={stage.coupon}
+            soldOut={stage.soldOut}
             onRestart={handleRestart}
           />
         )}

@@ -1,5 +1,6 @@
-import { useActionState, useRef } from 'react';
-import { participantSchema } from '../config/schema';
+import { useActionState, useRef, useState } from 'react';
+import type { FormEvent } from 'react';
+import { NAME_ALLOWED, NAME_MAX_LENGTH, WHATSAPP_LENGTH, participantSchema } from '../config/schema';
 import type { Coupon } from '../config/schema';
 import { submitParticipant } from '../lib/api';
 
@@ -9,16 +10,44 @@ type Props = {
   totalQuestions: number;
   privacyNoticeUrl: string;
   brandName: string;
-  onSubmitted: (coupon: Coupon | null) => void;
+  onSubmitted: (coupon: Coupon | null, soldOut: boolean) => void;
   /** Ya había jugado con ese WhatsApp y ganó: mostrar su cupón existente. */
   onAlreadyWon: (coupon: Coupon) => void;
 };
 
 type FormState = { error: string | null; name: string; whatsapp: string };
 
+/** Quita al escribir lo que no puede ir en un nombre (números, < > y símbolos) y los espacios dobles. */
+function cleanName(value: string): string {
+  return value
+    .replace(/[^\p{L} '.-]/gu, '')
+    .replace(/^[^\p{L}]+/u, '')
+    .replace(/ {2,}/g, ' ')
+    .slice(0, NAME_MAX_LENGTH);
+}
+
+function cleanWhatsapp(value: string): string {
+  return value.replace(/\D/g, '').slice(0, WHATSAPP_LENGTH);
+}
+
+/** Aplica el filtro sin mover el cursor al final cuando se edita a la mitad. */
+function filterInput(event: FormEvent<HTMLInputElement>, clean: (v: string) => string): string {
+  const input = event.currentTarget;
+  const cleaned = clean(input.value);
+  if (cleaned !== input.value) {
+    const removed = input.value.length - cleaned.length;
+    const caret = Math.max((input.selectionStart ?? cleaned.length) - removed, 0);
+    input.value = cleaned;
+    input.setSelectionRange(caret, caret);
+  }
+  return cleaned;
+}
+
 export function LeadForm({ triviaSlug, correctCount, totalQuestions, privacyNoticeUrl, brandName, onSubmitted, onAlreadyWon }: Props) {
   const privacyDialogRef = useRef<HTMLDialogElement>(null);
   const hasExternalNotice = privacyNoticeUrl.startsWith('http');
+  const [fields, setFields] = useState({ name: false, whatsapp: false, consent: false });
+  const isComplete = fields.name && fields.whatsapp && fields.consent;
 
   async function submit(_prev: FormState, formData: FormData): Promise<FormState> {
     const name = String(formData.get('name') ?? '');
@@ -28,6 +57,7 @@ export function LeadForm({ triviaSlug, correctCount, totalQuestions, privacyNoti
       name,
       whatsapp,
       consent: formData.get('consent') === 'on',
+      marketing: formData.get('marketing') === 'on',
       correctCount,
       totalQuestions,
     });
@@ -47,7 +77,7 @@ export function LeadForm({ triviaSlug, correctCount, totalQuestions, privacyNoti
       return { error: 'Ya participaste con este WhatsApp. ¡Gracias por jugar!', name, whatsapp };
     }
 
-    onSubmitted(result.coupon);
+    onSubmitted(result.coupon, result.soldOut);
     return { error: null, name, whatsapp };
   }
 
@@ -60,31 +90,71 @@ export function LeadForm({ triviaSlug, correctCount, totalQuestions, privacyNoti
       <p>Déjanos tus datos para ver tu resultado y, si ganaste, tu código de premio.</p>
 
       <form action={formAction} className="form" noValidate>
-        <label htmlFor="name">Nombre</label>
-        <input id="name" name="name" autoComplete="given-name" placeholder="Tu nombre" defaultValue={state.name} required />
+        <label htmlFor="name">
+          Nombre <span className="required" aria-hidden="true">*</span>
+        </label>
+        <input
+          id="name"
+          name="name"
+          autoComplete="given-name"
+          placeholder="Tu nombre"
+          defaultValue={state.name}
+          maxLength={NAME_MAX_LENGTH}
+          spellCheck={false}
+          onInput={(e) => {
+            const value = filterInput(e, cleanName).trim();
+            setFields((f) => ({ ...f, name: value.length >= 2 && NAME_ALLOWED.test(value) }));
+          }}
+          aria-describedby={state.error ? 'form-error' : undefined}
+          required
+        />
 
-        <label htmlFor="whatsapp">WhatsApp (10 dígitos)</label>
+        <label htmlFor="whatsapp">
+          WhatsApp (10 dígitos) <span className="required" aria-hidden="true">*</span>
+        </label>
         <input
           id="whatsapp"
           name="whatsapp"
           type="tel"
           inputMode="numeric"
           autoComplete="tel-national"
-          placeholder="55 1234 5678"
+          placeholder="5512345678"
           defaultValue={state.whatsapp}
+          maxLength={WHATSAPP_LENGTH}
+          onInput={(e) => {
+            const value = filterInput(e, cleanWhatsapp);
+            setFields((f) => ({ ...f, whatsapp: /^[2-9]\d{9}$/.test(value) }));
+          }}
           aria-describedby={state.error ? 'form-error' : undefined}
           required
         />
 
         <label className="consent">
-          <input type="checkbox" name="consent" />
+          <input
+            type="checkbox"
+            name="consent"
+            required
+            onChange={(e) => {
+              const checked = e.currentTarget.checked;
+              setFields((f) => ({ ...f, consent: checked }));
+            }}
+          />
           <span>
             Acepto el{' '}
             <button type="button" className="link-button" onClick={() => privacyDialogRef.current?.showModal()}>
               aviso de privacidad
             </button>{' '}
-            y que el negocio me contacte por WhatsApp.
+            y las{' '}
+            <a className="link-button" href={`/bases/${triviaSlug}`} target="_blank" rel="noreferrer">
+              bases
+            </a>
+            . <span className="required" aria-hidden="true">*</span>
           </span>
+        </label>
+
+        <label className="consent">
+          <input type="checkbox" name="marketing" />
+          <span>Quiero recibir promociones de {brandName} por WhatsApp (opcional).</span>
         </label>
 
         {state.error && (
@@ -93,7 +163,11 @@ export function LeadForm({ triviaSlug, correctCount, totalQuestions, privacyNoti
           </p>
         )}
 
-        <button type="submit" className="cta" disabled={isPending}>
+        <p className="hint form-required-note">
+          <span className="required" aria-hidden="true">*</span> Campos obligatorios
+        </p>
+
+        <button type="submit" className="cta" disabled={isPending || !isComplete}>
           {isPending ? 'Enviando…' : 'Ver mi resultado'}
           {!isPending && (
             <span className="cta__arrow" aria-hidden="true">
@@ -106,16 +180,15 @@ export function LeadForm({ triviaSlug, correctCount, totalQuestions, privacyNoti
       <dialog ref={privacyDialogRef} className="privacy-dialog" aria-labelledby="privacy-title">
         <h2 id="privacy-title">Aviso de privacidad</h2>
         <p>
-          {brandName} usará tu nombre y WhatsApp solo para enviarte promociones y avisarte de tu premio. No los
-          compartimos con nadie y puedes pedir que te borremos en cualquier momento.
+          {brandName} es responsable de tus datos. Usará tu nombre y WhatsApp para registrar tu participación, entregarte tu
+          cupón y validarlo. Solo te enviará promociones si marcas la casilla opcional. No se venden ni se comparten y
+          puedes pedir que se borren cuando quieras.
         </p>
-        {hasExternalNotice && (
-          <p>
-            <a href={privacyNoticeUrl} target="_blank" rel="noreferrer">
-              Ver aviso completo
-            </a>
-          </p>
-        )}
+        <p>
+          <a href={hasExternalNotice ? privacyNoticeUrl : `/privacidad/${triviaSlug}`} target="_blank" rel="noreferrer">
+            Ver aviso de privacidad completo
+          </a>
+        </p>
         <form method="dialog">
           <button type="submit" className="cta">
             Entendido

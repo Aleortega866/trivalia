@@ -9,7 +9,7 @@ const HTTP_TOO_MANY_REQUESTS = 429;
 export type ParticipantInput = z.input<typeof participantSchema>;
 
 export type SubmitResult =
-  | { status: 'saved'; coupon: Coupon | null }
+  | { status: 'saved'; coupon: Coupon | null; soldOut: boolean }
   | { status: 'already-played'; coupon: Coupon | null }
   | { status: 'error'; message: string };
 
@@ -38,7 +38,7 @@ export async function submitParticipant(input: ParticipantInput): Promise<Submit
       console.error(new Error('Respuesta inesperada del servidor', { cause: parsed.error }));
       return { status: 'error', message: 'Algo salió mal de nuestro lado. Intenta de nuevo en un momento.' };
     }
-    return { status: 'saved', coupon: parsed.data.coupon };
+    return { status: 'saved', coupon: parsed.data.coupon, soldOut: parsed.data.soldOut };
   } catch (error) {
     console.error(new Error('Fallo al enviar participante', { cause: error }));
     return { status: 'error', message: 'Sin conexión. Revisa tu internet e intenta de nuevo.' };

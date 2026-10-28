@@ -3,16 +3,23 @@ import { getTrivia } from './config/trivias';
 import { parseRoute } from './lib/route';
 import { TriviaApp } from './TriviaApp';
 import { RedeemPage } from './components/RedeemPage';
+import { StatsPage } from './components/StatsPage';
+import { LandingPage } from './components/LandingPage';
+import { PlayerPrivacy, PromoRules, TrivialaPrivacy, TrivialaTerms } from './components/LegalPage';
 
 // La ruta se lee una vez: cambiar de trivia es navegar a otra URL (recarga completa).
 const route = parseRoute(window.location.pathname);
 
 export function App() {
+  if (route.view === 'landing') return <LandingPage />;
+  if (route.view === 'legal') return route.doc === 'privacidad' ? <TrivialaPrivacy /> : <TrivialaTerms />;
   const config = route.view === 'not-found' ? undefined : getTrivia(route.slug);
   if (!config) return <NotFound />;
 
   // key: si en el futuro se navega sin recargar, el estado de una trivia no se mezcla con otra.
   if (route.view === 'redeem') return <RedeemPage key={config.slug} config={config} />;
+  if (route.view === 'panel') return <StatsPage key={config.slug} config={config} />;
+  if (route.view === 'legal-trivia') return route.doc === 'privacidad' ? <PlayerPrivacy config={config} /> : <PromoRules config={config} />;
   return <TriviaApp key={config.slug} config={config} />;
 }
 
